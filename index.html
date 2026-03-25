@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Madeira — Desarma</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:100%; height:100%; background:#0a0a0a; font-family:Georgia,serif; color:#e8e0d0; }
+#cover-view { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; padding:60px; text-align:center;}
+#cover-bg { position:absolute; inset:0; background:radial-gradient(ellipse at center,#1a1208 0%,#0a0a0a 70%); }
+#cover-content { position:relative; z-index:1; max-width:700px; }
+.cover-gallery-title { font-size:2.8rem; font-weight:normal; letter-spacing:0.18em; text-transform:uppercase; color:#d4b896; margin-bottom:20px; line-height:1.2; }
+.cover-divider { width:60px; height:1px; background:#d4b896; margin:0 auto 24px; opacity:0.5; }
+.cover-description { font-size:1.8rem; font-style:italic; color:#a09080; line-height:1.8; margin-bottom:36px; max-width:800px; }
+#cover-thumbs { margin-bottom:36px; max-width:800px; display:flex; justify-content:center}
+.cover-thumb { width:800px; height:600px; object-fit:cover; opacity:1; border:1px solid #2a2218; cursor:pointer; transition:all 0.2s; }
+.cover-thumb:hover { opacity:1; border-color:#d4b896; }
+.cover-start-btn { background:none; border:1px solid #d4b896; color:#d4b896; font-family:Georgia,serif; font-size:0.75rem; letter-spacing:0.2em; text-transform:uppercase; padding:12px 32px; cursor:pointer; transition:all 0.2s; }
+.cover-start-btn:hover { background:#d4b896; color:#0a0a0a; }
+
+#slide-view { display:none; flex-direction:column; align-items:center; height:100vh; }
+#text-block { text-align:center; padding:28px 60px 20px; max-width:800px; width:100%; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; }
+#slide-title   { font-size:1.5rem; font-weight:normal; letter-spacing:0.12em; text-transform:uppercase; color:#d4b896; margin-bottom:8px; opacity:0; transition:opacity 0.45s; }
+#slide-caption { font-size:1.2rem; font-style:italic; color:#a09080; line-height:1.5; opacity:0; transition:opacity 0.45s; }
+#image-area { position:relative; width:100%; flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.slide { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity 0.7s; pointer-events:none; }
+.slide.active { opacity:1; pointer-events:auto; }
+.slide img { max-width:80%; max-height:100%; object-fit:contain; box-shadow:0 8px 50px rgba(0,0,0,.8); }
+.side-nav { position:absolute; top:0; bottom:0; width:80px; display:flex; align-items:center; justify-content:center; z-index:10; cursor:pointer; opacity:0; transition:opacity 0.25s; }
+.side-nav:hover { opacity:1; }
+.side-nav.disabled { display:none; }
+#side-prev { left:0; background:linear-gradient(to right,rgba(0,0,0,0.35),transparent); }
+#side-next { right:0; background:linear-gradient(to left,rgba(0,0,0,0.35),transparent); }
+.side-nav-icon { width:44px; height:44px; border-radius:50%; border:1px solid rgba(212,184,150,0.5); color:#d4b896; display:flex; align-items:center; justify-content:center; font-size:1.3rem; background:rgba(0,0,0,0.4); transition:all 0.2s; }
+.side-nav:hover .side-nav-icon { border-color:#d4b896; background:rgba(0,0,0,0.65); }
+#controls { display:flex; align-items:center; gap:28px; padding:16px 0 20px; }
+.arrow-btn { background:none; border:1px solid #3a3028; color:#a09080; width:42px; height:42px; border-radius:50%; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+.arrow-btn:hover { border-color:#d4b896; color:#d4b896; }
+.arrow-btn:disabled { opacity:.2; cursor:default; }
+#dots { display:flex; gap:7px; flex-wrap:wrap; max-width:220px; justify-content:center; }
+.dot { width:6px; height:6px; border-radius:50%; background:#3a3028; cursor:pointer; transition:background 0.3s; }
+.dot.active { background:#d4b896; }
+#counter { font-size:0.75rem; letter-spacing:0.15em; color:#504030; min-width:60px; text-align:center; }
+#back-cover { background:none; border:none; color:#504030; font-size:0.68rem; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; padding:4px 10px; transition:color 0.2s; position:absolute; bottom:18px; left:20px; }
+#back-cover:hover { color:#d4b896; }
+</style>
+</head>
+<body>
+
+<div id="cover-view">
+  <div id="cover-bg"></div>
+  <div id="cover-content">
+    <h1 class="cover-gallery-title">Madeira — Desarma</h1>
+    <div class="cover-divider"></div>
+    <p class="cover-description">An evening at Desarma by Octávio Freitas in Funchal, Madeira — a battle of senses fought in your mouth.</p>
+    <div id="cover-thumbs">
+    <img class="cover-thumb" src="photos/2511 Portugal-Madeira-1061.jpeg" alt="An INCREADIBLE meal at Desarma Restaurant" title="An INCREADIBLE meal at Desarma Restaurant" onclick="showSlideView(0)">
+    </div>
+    <button class="cover-start-btn" onclick="showSlideView(0)">Begin ›</button>
+    </div>
+  </div>
+<div id="slide-view">
+  <div id="text-block">
+    <p id="slide-title"></p>
+    <p id="slide-caption"></p>
+  </div>
+  <div id="image-area">
+    <div class="side-nav disabled" id="side-prev" onclick="goTo(current-1)"><div class="side-nav-icon">&#8592;</div></div>
+    <div class="side-nav" id="side-next" onclick="goTo(current+1)"><div class="side-nav-icon">&#8594;</div></div>
+    <div class="slide active" data-index="0"><img src="photos/2511 Portugal-Madeira-1019.jpeg" alt="So Exciting!"></div>
+    <div class="slide" data-index="1"><img src="photos/2511 Portugal-Madeira-1020.jpeg" alt="The Chef's Table - A stunning onyx bar!"></div>
+    <div class="slide" data-index="2"><img src="photos/2511 Portugal-Madeira-1021.jpeg" alt="Open Kitchen"></div>
+    <div class="slide" data-index="3"><img src="photos/2511 Portugal-Madeira-1022.jpeg" alt="2511 Portugal-Madeira-1022"></div>
+    <div class="slide" data-index="4"><img src="photos/2511 Portugal-Madeira-1023.jpeg" alt="Cource In Progress"></div>
+    <div class="slide" data-index="5"><img src="photos/2511 Portugal-Madeira-1024.jpeg" alt="Dried Fish Display"></div>
+    <div class="slide" data-index="6"><img src="photos/2511 Portugal-Madeira-1025.jpeg" alt="Amuse Bouche - Barnacles, Peas and Shizo Greens"></div>
+    <div class="slide" data-index="7"><img src="photos/2511 Portugal-Madeira-1026.jpeg" alt="Sea Sausage"></div>
+    <div class="slide" data-index="8"><img src="photos/2511 Portugal-Madeira-1028.jpeg" alt="Sea Sausage"></div>
+    <div class="slide" data-index="9"><img src="photos/2511 Portugal-Madeira-1027.jpeg" alt="Sea Sausage"></div>
+    <div class="slide" data-index="10"><img src="photos/2511 Portugal-Madeira-1029.jpeg" alt="Fennel Three Ways with Imperial Caviar"></div>
+    <div class="slide" data-index="11"><img src="photos/2511 Portugal-Madeira-1030.jpeg" alt="Such detail and care goes into every dish!"></div>
+    <div class="slide" data-index="12"><img src="photos/2511 Portugal-Madeira-1031.jpeg" alt="And they always look like they are having fun!"></div>
+    <div class="slide" data-index="13"><img src="photos/2511 Portugal-Madeira-1032.jpeg" alt="Smoked Scabbard Fish with Carrot &amp; Ginger Reduction"></div>
+    <div class="slide" data-index="14"><img src="photos/2511 Portugal-Madeira-1033.jpeg" alt="Smoked Scabbard Fish with Carrot &amp; Ginger Reduction"></div>
+    <div class="slide" data-index="15"><img src="photos/2511 Portugal-Madeira-1034.jpeg" alt="A trio of tiny bites"></div>
+    <div class="slide" data-index="16"><img src="photos/2511 Portugal-Madeira-1035.jpeg" alt="Tuna tartar balanced on a bay leaf cracker"></div>
+    <div class="slide" data-index="17"><img src="photos/2511 Portugal-Madeira-1036.jpeg" alt="A miniature beef tartar, rich and refined"></div>
+    <div class="slide" data-index="18"><img src="photos/2511 Portugal-Madeira-1037.jpeg" alt="Scallop with Passion Fruit &amp; Sea Urchin Sauce"></div>
+    <div class="slide" data-index="19"><img src="photos/2511 Portugal-Madeira-1038.jpeg" alt="Scallop with Passion Fruit &amp; Sea Urchin Sauce"></div>
+    <div class="slide" data-index="20"><img src="photos/2511 Portugal-Madeira-1039.jpeg" alt="Crisp Shrimp Cracker"></div>
+    <div class="slide" data-index="21"><img src="photos/2511 Portugal-Madeira-1040.jpeg" alt="Saucier hard at work"></div>
+    <div class="slide" data-index="22"><img src="photos/2511 Portugal-Madeira-1041.jpeg" alt="So much love into each dish!"></div>
+    <div class="slide" data-index="23"><img src="photos/2511 Portugal-Madeira-1042.jpeg" alt="&quot;Sea Ham&quot; -  Tuna &amp; Swordfish"></div>
+    <div class="slide" data-index="24"><img src="photos/2511 Portugal-Madeira-1043.jpeg" alt="&quot;Sea Ham&quot; -  Tuna &amp; Swordfish"></div>
+    <div class="slide" data-index="25"><img src="photos/2511 Portugal-Madeira-1045.jpeg" alt="Trout Trilogy"></div>
+    <div class="slide" data-index="26"><img src="photos/2511 Portugal-Madeira-1046.jpeg" alt="Look at that concentration"></div>
+    <div class="slide" data-index="27"><img src="photos/2511 Portugal-Madeira-1047.jpeg" alt="Beets, Grapes &amp; Goat Cheese"></div>
+    <div class="slide" data-index="28"><img src="photos/2511 Portugal-Madeira-1048.jpeg" alt="Grouper with White Truffle &amp; Burr Blanc"></div>
+    <div class="slide" data-index="29"><img src="photos/2511 Portugal-Madeira-1049.jpeg" alt="Grouper with White Truffle &amp; Burr Blanc"></div>
+    <div class="slide" data-index="30"><img src="photos/2511 Portugal-Madeira-1050.jpeg" alt="Suckling Pig &amp; Beef Belly Duo"></div>
+    <div class="slide" data-index="31"><img src="photos/2511 Portugal-Madeira-1052.jpeg" alt="Suckling Pig &amp; Beef Belly Duo"></div>
+    <div class="slide" data-index="32"><img src="photos/2511 Portugal-Madeira-1053.jpeg" alt="Special Sourdough"></div>
+    <div class="slide" data-index="33"><img src="photos/2511 Portugal-Madeira-1054.jpeg" alt="Ready for dessert(s)"></div>
+    <div class="slide" data-index="34"><img src="photos/2511 Portugal-Madeira-1055.jpeg" alt="Raspberry &amp; Ruby Chocolate Mousse"></div>
+    <div class="slide" data-index="35"><img src="photos/2511 Portugal-Madeira-1057.jpeg" alt="Banana Rum &amp; Dark Chocolate"></div>
+    <div class="slide" data-index="36"><img src="photos/2511 Portugal-Madeira-1058.jpeg" alt="Banana Rum &amp; Dark Chocolate"></div>
+    <div class="slide" data-index="37"><img src="photos/2511 Portugal-Madeira-1059.jpeg" alt="Banana Rum &amp; Dark Chocolate"></div>
+    <div class="slide" data-index="38"><img src="photos/2511 Portugal-Madeira-1060.jpeg" alt="Petit Fours"></div>
+    <div class="slide" data-index="39"><img src="photos/2511 Portugal-Madeira-1061.jpeg" alt="An INCREADIBLE meal at Desarma Restaurant"></div>
+  </div>
+  <div id="controls">
+    <button class="arrow-btn" id="prev" onclick="goTo(current-1)">&#8592;</button>
+    <div id="dots"><div class="dot active" onclick="goTo(0)"></div><div class="dot" onclick="goTo(1)"></div><div class="dot" onclick="goTo(2)"></div><div class="dot" onclick="goTo(3)"></div><div class="dot" onclick="goTo(4)"></div><div class="dot" onclick="goTo(5)"></div><div class="dot" onclick="goTo(6)"></div><div class="dot" onclick="goTo(7)"></div><div class="dot" onclick="goTo(8)"></div><div class="dot" onclick="goTo(9)"></div><div class="dot" onclick="goTo(10)"></div><div class="dot" onclick="goTo(11)"></div><div class="dot" onclick="goTo(12)"></div><div class="dot" onclick="goTo(13)"></div><div class="dot" onclick="goTo(14)"></div><div class="dot" onclick="goTo(15)"></div><div class="dot" onclick="goTo(16)"></div><div class="dot" onclick="goTo(17)"></div><div class="dot" onclick="goTo(18)"></div><div class="dot" onclick="goTo(19)"></div><div class="dot" onclick="goTo(20)"></div><div class="dot" onclick="goTo(21)"></div><div class="dot" onclick="goTo(22)"></div><div class="dot" onclick="goTo(23)"></div><div class="dot" onclick="goTo(24)"></div><div class="dot" onclick="goTo(25)"></div><div class="dot" onclick="goTo(26)"></div><div class="dot" onclick="goTo(27)"></div><div class="dot" onclick="goTo(28)"></div><div class="dot" onclick="goTo(29)"></div><div class="dot" onclick="goTo(30)"></div><div class="dot" onclick="goTo(31)"></div><div class="dot" onclick="goTo(32)"></div><div class="dot" onclick="goTo(33)"></div><div class="dot" onclick="goTo(34)"></div><div class="dot" onclick="goTo(35)"></div><div class="dot" onclick="goTo(36)"></div><div class="dot" onclick="goTo(37)"></div><div class="dot" onclick="goTo(38)"></div><div class="dot" onclick="goTo(39)"></div></div>
+    <span id="counter">1 / 40</span>
+    <button class="arrow-btn" id="next" onclick="goTo(current+1)">&#8594;</button>
+  </div>
+  <button id="back-cover" onclick="showCoverView()">&#8592; Cover</button>
+</div>
+
+<script>
+const data = [
+  {
+    "title": "So Exciting!",
+    "caption": "Getting ready for our Funchal Feast!"
+  },
+  {
+    "title": "The Chef's Table - A stunning onyx bar!",
+    "caption": "Lined up and ready to go!"
+  },
+  {
+    "title": "Open Kitchen",
+    "caption": "Chefs work in the immaculate open kitchen"
+  },
+  {
+    "title": "2511 Portugal-Madeira-1022",
+    "caption": "A golden sunset lights up the hillside city of Funchal, viewed from the top of Hotel The Views Baia."
+  },
+  {
+    "title": "Cource In Progress",
+    "caption": "Trisha looks on as we get ready to start eating!"
+  },
+  {
+    "title": "Dried Fish Display",
+    "caption": "Whole dried fish hang as a dramatic culinary installation in the kitchen, teasing us about the meal to come!"
+  },
+  {
+    "title": "Amuse Bouche - Barnacles, Peas and Shizo Greens",
+    "caption": "The evening opened with a delicate sea-kissed amuse - tender barnacles nestled among sweet spring peas and fragrant shiso. A tiny bite, but bursting with the pure essence of Madeira's coast."
+  },
+  {
+    "title": "Sea Sausage",
+    "caption": "The proud Chef showing off his blackend fish sausages."
+  },
+  {
+    "title": "Sea Sausage",
+    "caption": "A playful creation = shrimp, trout, and tuna emulsified into a silky \"sea sausage,\"  dyed black with squid ink. Crispy squid shards on top added crunch and depth. It looked daring, and it tasted even better."
+  },
+  {
+    "title": "Sea Sausage",
+    "caption": ""
+  },
+  {
+    "title": "Fennel Three Ways with Imperial Caviar",
+    "caption": "Fennel reimagined - roasted, pureed, and raw - topped with glossy Imperial caviar. A study in texture and balance: crisp, creamy, briny, and bright. The kind of dish that makes you stop and whisper - wow!"
+  },
+  {
+    "title": "Such detail and care goes into every dish!",
+    "caption": ""
+  },
+  {
+    "title": "And they always look like they are having fun!",
+    "caption": ""
+  },
+  {
+    "title": "Smoked Scabbard Fish with Carrot & Ginger Reduction",
+    "caption": "Local scabbard fish, gently smoked, sat in a pool of silky carrot reduction brightened by ginger. The smoke, sweetness, and spice danced together - elegant and unexpected."
+  },
+  {
+    "title": "Smoked Scabbard Fish with Carrot & Ginger Reduction",
+    "caption": ""
+  },
+  {
+    "title": "A trio of tiny bites",
+    "caption": "Tuna tartar balanced on a bay leaf cracker, A miniature beef tartar, rich and refined, And a playful \"Escoffier fish sandwich\" classic French inspiration, reinvented in one perfect mouthful."
+  },
+  {
+    "title": "Tuna tartar balanced on a bay leaf cracker",
+    "caption": ""
+  },
+  {
+    "title": "A miniature beef tartar, rich and refined",
+    "caption": ""
+  },
+  {
+    "title": "Scallop with Passion Fruit & Sea Urchin Sauce",
+    "caption": "A showstopper. Plump scallop paired with a passion fruit and sea urchin emulsion, finished with coconut milk. Tropical, oceanic, and utterly luscious. Served with crisp shrimp crackers for texture."
+  },
+  {
+    "title": "Scallop with Passion Fruit & Sea Urchin Sauce",
+    "caption": ""
+  },
+  {
+    "title": "Crisp Shrimp Cracker",
+    "caption": ""
+  },
+  {
+    "title": "Saucier hard at work",
+    "caption": "The various sauces with this meal where simply OUT OF THIS WORLD!"
+  },
+  {
+    "title": "So much love into each dish!",
+    "caption": ""
+  },
+  {
+    "title": "\"Sea Ham\" -  Tuna & Swordfish",
+    "caption": "Paper-thin slices of tuna and swordfish aged like ham, accompanied by a tiny onion pastry. A glossy Merlot-onion reduction tied it all together - surf meets charcuterie."
+  },
+  {
+    "title": "\"Sea Ham\" -  Tuna & Swordfish",
+    "caption": ""
+  },
+  {
+    "title": "Trout Trilogy",
+    "caption": "Trout three ways: grilled fillet, smoked roe, and crispy skin shards. Served with oyster leaf, nasturtium, and a delicate dashi sauce. Umami perfection - rich, smoky, and green."
+  },
+  {
+    "title": "Look at that concentration",
+    "caption": ""
+  },
+  {
+    "title": "Beets, Grapes & Goat Cheese",
+    "caption": "A moment of earthy sweetness - roasted beets, pickled grapes, and creamy goat cheese in a deep beet reduction. A palate refresher disguised as art."
+  },
+  {
+    "title": "Grouper with White Truffle & Burr Blanc",
+    "caption": "A luxurious transition back to the sea. Flaky grouper enriched with a white truffle-scented beurre blanc. Silky, aromatic, and purely decadent."
+  },
+  {
+    "title": "Grouper with White Truffle & Burr Blanc",
+    "caption": "Oops - overwhelmed by the need to eat - forgot to take a picture first..."
+  },
+  {
+    "title": "Suckling Pig & Beef Belly Duo",
+    "caption": "Two bites of indulgence: Suckling pig belly glazed with port wine reduction - rich and sticky perfection."
+  },
+  {
+    "title": "Suckling Pig & Beef Belly Duo",
+    "caption": "Two bites of indulgence:\r\r48-hour sous-vide beef belly with onion cream and Madeira-marinated white truffle, finished with a glossy Madeira wine reduction. Deep, dark, and soul-warming."
+  },
+  {
+    "title": "Special Sourdough",
+    "caption": "102 year old starter!"
+  },
+  {
+    "title": "Ready for dessert(s)",
+    "caption": ""
+  },
+  {
+    "title": "Raspberry & Ruby Chocolate Mousse",
+    "caption": "Paired with raspberry sorbet and soy yogurt granita. Bright, tangy, and beautifully balanced."
+  },
+  {
+    "title": "Banana Rum & Dark Chocolate",
+    "caption": "An indulgent finale of dark chocolate mousse rolled in activated charcoal, layered with salted caramel and caramel jam, topped with banana-rum ice cream and gold leaf. Pure gold - literally."
+  },
+  {
+    "title": "Banana Rum & Dark Chocolate",
+    "caption": ""
+  },
+  {
+    "title": "Banana Rum & Dark Chocolate",
+    "caption": ""
+  },
+  {
+    "title": "Petit Fours",
+    "caption": "And a little more to finish!"
+  },
+  {
+    "title": "An INCREADIBLE meal at Desarma Restaurant",
+    "caption": "And a wonderful sendoff from Chef OctÃ¡vio Freitas"
+  }
+];
+const slideEls = document.querySelectorAll('.slide');
+const dotEls   = document.querySelectorAll('.dot');
+const titleEl   = document.getElementById('slide-title');
+const captionEl = document.getElementById('slide-caption');
+const counterEl = document.getElementById('counter');
+let current = 0;
+
+function showCoverView() {
+  document.getElementById('cover-view').style.display = 'flex';
+  document.getElementById('slide-view').style.display = 'none';
+}
+function showSlideView(n) {
+  document.getElementById('cover-view').style.display = 'none';
+  document.getElementById('slide-view').style.display = 'flex';
+  goTo(n);
+}
+function goTo(n) {
+  slideEls[current].classList.remove('active'); dotEls[current].classList.remove('active');
+  current = ((n % slideEls.length) + slideEls.length) % slideEls.length;
+  slideEls[current].classList.add('active'); dotEls[current].classList.add('active');
+  counterEl.textContent = (current+1) + ' / ' + slideEls.length;
+  titleEl.style.opacity = captionEl.style.opacity = 0;
+  setTimeout(() => {
+    titleEl.textContent   = data[current].title;
+    captionEl.textContent = data[current].caption;
+    titleEl.style.opacity = captionEl.style.opacity = 1;
+  }, 280);
+  document.getElementById('prev').disabled = current === 0;
+  document.getElementById('next').disabled = current === slideEls.length - 1;
+  document.getElementById('side-prev').classList.toggle('disabled', current === 0);
+  document.getElementById('side-next').classList.toggle('disabled', current === slideEls.length - 1);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  goTo(current-1);
+  if (e.key === 'ArrowRight') goTo(current+1);
+});
+titleEl.textContent   = data[0].title;
+captionEl.textContent = data[0].caption;
+titleEl.style.opacity = captionEl.style.opacity = 1;
+document.getElementById('prev').disabled = true;
+</script>
+</body>
+</html>
